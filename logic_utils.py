@@ -1,3 +1,5 @@
+# FIX: Hard was 1-50 (smaller than Normal) and Easy had fewer attempts than Normal.
+# Claude Code moved the settings here so each difficulty scales properly; verified by test_difficulty_gets_harder.
 DIFFICULTY_SETTINGS = {
     # difficulty: (low, high, attempt_limit)
     "Easy": (1, 20, 8),
@@ -5,6 +7,8 @@ DIFFICULTY_SETTINGS = {
     "Hard": (1, 200, 6),
 }
 
+# FIX: The starter hints were backwards ("Too High" said "Go HIGHER!").
+# Claude Code swapped them and moved them out of check_guess; verified with test_guess_too_high_hint_says_lower.
 OUTCOME_MESSAGES = {
     "Win": "🎉 Correct!",
     "Too High": "📉 Too high — go LOWER!",
@@ -33,6 +37,8 @@ def parse_guess(raw: str, low: int = None, high: int = None):
     if raw is None or raw.strip() == "":
         return False, None, "Enter a guess."
 
+    # FIX: "3.9" used to be truncated to 3 and out-of-range guesses were accepted.
+    # Refactored from app.py into logic_utils.py with Claude Code, then added a range check.
     try:
         value = int(raw.strip())
     except ValueError:
@@ -50,6 +56,8 @@ def check_guess(guess: int, secret: int):
 
     outcome examples: "Win", "Too High", "Too Low"
     """
+    # FIX: The starter compared the secret as a string on even attempts ("9" > "50").
+    # Claude Code refactored this into logic_utils.py and removed the str fallback so comparison is always numeric.
     if guess == secret:
         return "Win"
     if guess > secret:
@@ -59,6 +67,8 @@ def check_guess(guess: int, secret: int):
 
 def update_score(current_score: int, outcome: str, attempt_number: int):
     """Update score based on outcome and attempt number (1 = first guess)."""
+    # FIX: Win bonus used attempt_number + 1 (off by one) and "Too High" gave +5 on even attempts.
+    # Fixed with Claude Code; test_scoring checks both.
     if outcome == "Win":
         points = 100 - 10 * (attempt_number - 1)
         return current_score + max(points, 10)

@@ -11,6 +11,8 @@ from logic_utils import (
 )
 
 
+# FIX: New Game never reset status/score/history and always used 1-100.
+# Claude Code pulled the reset into one function used for first load, New Game, and difficulty changes.
 def start_new_game(difficulty: str):
     low, high = get_range_for_difficulty(difficulty)
     st.session_state.difficulty = difficulty
@@ -72,6 +74,7 @@ if submit and st.session_state.status == "playing":
     if not ok:
         st.error(err)
     else:
+        # FIX: Attempts used to start at 1 and invalid input still cost a guess; now only valid guesses count.
         st.session_state.attempts += 1
         st.session_state.history.append(guess_int)
 
